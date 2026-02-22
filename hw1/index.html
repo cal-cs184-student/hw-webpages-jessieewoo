@@ -1,112 +1,216 @@
 <html>
-	<head>
-		<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=default'></script>
-		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-		<style>
-			h1 {
-				text-align: center;
-			}
+  <head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=default"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      h1 {
+        text-align: center;
+      }
+      .container {
+        margin: 0 auto;
+        padding: 60px 20%;
+      }
+      figure {
+        text-align: center;
+        margin: 40px 0;
+      }
+      img {
+        display: inline-block;
+        max-width: 500px;
+      }
+      body {
+        font-family: "Inter", sans-serif;
+      }
+    </style>
+  </head>
 
-			.container {
-				margin: 0 auto;
-				padding: 60px 20%;
-			}
+  <body>
+    <div class="container">
+      <h1>CS184/284A Spring 2025 Homework 1 Write-Up</h1>
+      <div style="text-align: center">Name: Jessie Liu</div>
 
-			figure {
-				text-align: center;
-			}
+      <br />
 
-			img {
-				display: inline-block;
-			}
+      Link to webpage: (TODO) <br />
+      Link to GitHub repository: https://github.com/cal-cs184-student/hw-webpages-jessieewoo 
 
-			body {
-				font-family: 'Inter', sans-serif;
-			}
-		</style>
-	</head>
-	<body>
-		<div class="container">
-		<h1>CS184/284A Spring 2025 Homework 1 Write-Up</h1>
-		<div style="text-align: center;">Names: </div>
+      <h2>Overview</h2>
+      In this assignment, I implemented a full software rasterization pipeline
+      including triangle rasterization, supersampling for antialiasing,
+      geometric transforms, barycentric interpolation, texture sampling (nearest
+      and bilinear), and mipmap level sampling. Through this homework, I learned
+      how modern rendering pipelines break down into smaller mathematical
+      components. I gained intuition about how aliasing occurs, how
+      supersampling reduces it, how barycentric coordinates enable
+      interpolation, and how mipmaps reduce texture aliasing. It was especially
+      interesting to see how sampling decisions directly impact visual quality
+      and performance tradeoffs. ---
 
-		<br>
+      <h2>Task 1: Drawing Single-Color Triangles</h2>
 
-		Link to webpage: (TODO) <a href="https://cs184.eecs.berkeley.edu/sp25">cs184.eecs.berkeley.edu/sp25</a>
-		
-		<br>
+      <h3>Triangle Rasterization</h3>
+      To rasterize a triangle, I implemented a helper function that performs a
+      2D cross-product sign test. For each edge of the triangle and a sample
+      point, I compute: \[ (x - x_a)(y_b - y_a) - (y - y_a)(x_b - x_a) \] This
+      determines whether the point lies to the left or right of the directed
+      edge. To test whether a point lies inside the triangle: - I compute the
+      signed area test for all three edges. - If all signs are consistent (all
+      non-negative or all non-positive), the point lies inside. - Otherwise, it
+      lies outside. I compute the triangle’s bounding box using min/max of
+      vertex coordinates, convert to integer pixel indices with floor/ceil, then
+      iterate over each pixel in the box. I sample at pixel centers (x + 0.5, y
+      + 0.5). If inside, I fill the pixel.
 
-		Link to GitHub repository: (TODO) <a href="https://cs184.eecs.berkeley.edu/sp25">cs184.eecs.berkeley.edu/sp25</a>
+      <h3>Runtime Analysis</h3>
+      My algorithm iterates only over the bounding box and performs constant
+      work per sample (three edge tests). Therefore runtime is: \[ O(B) \] where
+      B is the number of samples in the bounding box. This is asymptotically no
+      worse than checking each sample in the bounding box.
 
-		<figure>
-			<img src="lion.jpg" alt="Lion" style="width:50%"/>
-			<figcaption>You can add images with captions!</figcaption>
-		</figure>
+      <h3>Result Screenshot</h3>
 
-		<!--
-		We've already added one heading per task, to make your write-up as navigable when grading. Please fit your write-up within these sections!
-		-->
+      <figure>
+        <img src="photos/photo1.png" />
+        <figcaption>basic/test4.svg with pixel inspector.</figcaption>
+      </figure>
 
-		<h2>Overview</h2>
-		Give a high-level overview of what you implemented in this homework. Think about what you've built as a whole. Share your thoughts on what interesting things you've learned from completing the homework.
+      ---
 
-		<h2>Task 1: Drawing Single-Color Triangles</h2>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+      <h2>Task 2: Antialiasing by Supersampling</h2>
 
-		<p>Here is an example 2x2 gridlike structure using an HTML table. Each <b>tr</b> is a row and each <b>td</b> is a column in that row. You might find this useful for framing and showing your result images in an organized fashion.</p>
-		<div style="display: flex; flex-direction: column; align-items: center;">
-			<table style="width: 100%; text-align: center; border-collapse: collapse;">
-			  <tr>
-				<td style="text-align: center;">
-				  <img src="lion.jpg" width="400px"/>
-				  <figcaption>Caption goes here.</figcaption>
-				</td>
-				<td style="text-align: center;">
-				  <img src="lion.jpg" width="400px"/>
-				  <figcaption>Caption goes here.</figcaption>
-				</td>
-			  </tr>
-			  <tr>
-				<td style="text-align: center;">
-				  <img src="lion.jpg" width="400px"/>
-				  <figcaption>Caption goes here.</figcaption>
-				</td>
-				<td style="text-align: center;">
-				  <img src="lion.jpg" width="400px"/>
-				  <figcaption>Caption goes here.</figcaption>
-				</td>
-			  </tr>
-			</table>
-		</div>
-		
-		<h2>Task 2: Antialiasing by Supersampling</h2>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+      <h3>Algorithm</h3>
+      Instead of storing one color per pixel, I implemented a
+      <code>sample_buffer</code> storing multiple subsamples per pixel. - Let
+      sample_rate = N². - Each pixel becomes an N × N grid. - For each pixel in
+      bounding box: - Loop over all subsamples. - Compute subsample position: \[
+      (x + \frac{i+0.5}{N}, \; y + \frac{j+0.5}{N}) \] - Perform triangle edge
+      tests. - Store subsample color. After rasterization, I average subsamples
+      in <code>resolve_to_framebuffer</code>.
 
-		<h2>Task 3: Transforms</h2>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+      <h3>Why Supersampling Works</h3>
+      Sample rate 1 → binary coverage → jagged edges. Higher sample rates →
+      fractional coverage → smooth blending.
 
-		<h2>Task 4: Barycentric coordinates</h2>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+      <h3>Comparisons</h3>
 
-		<h2>Task 5: "Pixel sampling" for texture mapping</h2>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+      <table style="width: 100%; text-align: center">
+        <tr>
+          <td><img src="photos/photo2.png" /><br />Sample Rate 1</td>
+          <td><img src="photos/photo3.png" /><br />Sample Rate 4</td>
+          <td><img src="photos/photo4.png" /><br />Sample Rate 16</td>
+        </tr>
+      </table>
 
-		<h2>Task 6: "Level Sampling" with mipmaps for texture mapping</h2>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+      As sample rate increases, aliasing decreases because we approximate
+      partial pixel coverage more accurately. ---
 
-		<h2>(Optional) Task 7: Extra Credit - Draw Something Creative!</h2>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+      <h2>Task 3: Transforms</h2>
 
-		<h2>Additional Notes (please remove)</h2>
-		<ul>
-			<li>You can also add code if you'd like as so: <code>code code code</code></li>
-			<li>If you'd like to add math equations, 
-				<ul>
-					<li>You can write inline equations like so: \( a^2 + b^2 = c^2 \)</li>
-					<li>You can write display equations like so: \[ a^2 + b^2 = c^2 \]</li>
-				</ul>
-			</li>
-		</ul>
-		</div>
-	</body>
+      I modified <code>robot.svg</code> into <code>my_robot.svg</code> to make
+      cubeman appear to be waving. - Applied hierarchical rotation and
+      translation. - Rotated upper arms upward. - Rotated lower arms outward to
+      simulate waving. - Kept original proportions and color. The goal was to
+      explore hierarchical transformations and make the figure expressive.
+
+      <figure>
+        <img src="photos/photo5.png" />
+        <figcaption>Waving cubeman.</figcaption>
+      </figure>
+
+      ---
+
+      <h2>Task 4: Barycentric Coordinates</h2>
+
+      Barycentric coordinates represent any point inside a triangle as weighted
+      sums of its vertices: \[ P = \alpha A + \beta B + \gamma C \] where: \[
+      \alpha + \beta + \gamma = 1 \] If a point is closer to a vertex, that
+      vertex’s weight is larger. This allows smooth interpolation of attributes
+      such as color: - Red vertex → high red weight - Green vertex → high green
+      weight - Blue vertex → high blue weight This produces smooth gradients.
+
+      <figure>
+        <img src="photos/photo6.png" />
+        <figcaption>
+          Color interpolation using barycentric coordinates.
+        </figcaption>
+      </figure>
+
+      ---
+
+      <h2>Task 5: Pixel Sampling for Texture Mapping</h2>
+
+      <h3>Pixel Sampling</h3>
+      For each pixel: - Compute interpolated (u, v). - Convert to texture space.
+      - Sample texel.
+
+      <h3>Nearest Sampling</h3>
+      - Round to nearest texel. - Fast but blocky.
+
+      <h3>Bilinear Sampling</h3>
+      - Sample four neighboring texels. - Interpolate horizontally and
+      vertically. - Produces smoother results.
+
+      <h3>Comparison</h3>
+
+      <table style="width: 100%; text-align: center">
+        <tr>
+          <td><img src="photos/photo7.png" /><br />Nearest 1 spp</td>
+          <td><img src="photos/photo8.png" /><br />Nearest 16 spp</td>
+        </tr>
+        <tr>
+          <td><img src="photos/photo9.png" /><br />Bilinear 1 spp</td>
+          <td><img src="photos/photo10.png" /><br />Bilinear 16 spp</td>
+        </tr>
+      </table>
+
+      Nearest is faster but blocky. Bilinear blends texels and improves quality
+      significantly. ---
+
+      <h2>Task 6: Level Sampling with Mipmaps</h2>
+
+      <h3>Level Sampling</h3>
+      A mipmap is a pyramid of textures at different resolutions. To compute mip
+      level: - Measure change in UV across screen space. - Convert to texel
+      space. - Compute footprint. - Use: \[ \text{level} =
+      \log_2(\text{footprint}) \] Modes: - L_ZERO → always level 0 - L_NEAREST →
+      nearest mip - L_LINEAR → interpolate between two mips
+
+      <h3>Tradeoffs</h3>
+
+      <ul>
+        <li><b>Pixel Sampling:</b> Nearest fast, bilinear smoother.</li>
+        <li><b>Level Sampling:</b> Reduces aliasing when zoomed out.</li>
+        <li>
+          <b>Supersampling:</b> Smooths triangle edges but increases memory and
+          runtime.
+        </li>
+      </ul>
+
+      Highest quality: - P_LINEAR - L_LINEAR - High sample rate Highest cost: -
+      More computation and memory.
+
+      <h3>Custom PNG Comparisons</h3>
+
+      <table style="width: 100%; text-align: center">
+        <tr>
+          <td><img src="photos/photo11.png" /><br />L_ZERO + P_NEAREST</td>
+          <td><img src="photos/photo12.png" /><br />L_ZERO + P_LINEAR</td>
+        </tr>
+        <tr>
+          <td><img src="photos/photo13.png" /><br />L_NEAREST + P_NEAREST</td>
+          <td><img src="photos/photo14.png" /><br />L_NEAREST + P_LINEAR</td>
+        </tr>
+      </table>
+
+      Mipmapping significantly reduces aliasing when textures shrink. ---
+
+      <h2>Acknowledgements</h2>
+
+      ChatGPT, OpenAI (chat.openai.com) – used for sentence restructuring,
+      wording refinement, and coding assistance in terms of understanding C++ syntax and concepts.
+    </div>
+  </body>
 </html>
