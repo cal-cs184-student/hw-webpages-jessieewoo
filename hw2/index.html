@@ -1,116 +1,750 @@
-<html>
-	<head>
-		<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=default'></script>
-		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-		<style>
-			h1 {
-				text-align: center;
-			}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HW 2 Write-Up</title>
+    <style>
+      body {
+        font-family: Georgia, serif;
+        max-width: 860px;
+        margin: 40px auto;
+        padding: 0 24px 60px;
+        background: #f9f9f9;
+        color: #222;
+        line-height: 1.7;
+      }
+      h1 {
+        font-size: 2rem;
+        border-bottom: 2px solid #333;
+        padding-bottom: 8px;
+        margin-bottom: 6px;
+      }
+      h2 {
+        font-size: 1.4rem;
+        margin-top: 40px;
+        border-bottom: 1px solid #ccc;
+        padding-bottom: 4px;
+      }
+      h3 {
+        font-size: 1.1rem;
+        margin-top: 24px;
+        font-style: italic;
+        color: #444;
+      }
+      p,
+      li {
+        font-size: 0.97rem;
+      }
+      ul,
+      ol {
+        padding-left: 24px;
+      }
+      li {
+        margin-bottom: 8px;
+      }
+      a {
+        color: #1a6bb5;
+      }
+      .links-box {
+        background: #eef4fb;
+        border-left: 4px solid #1a6bb5;
+        padding: 12px 16px;
+        margin-bottom: 30px;
+        border-radius: 4px;
+        font-size: 0.93rem;
+      }
+      .links-box a {
+        display: block;
+        margin-bottom: 4px;
+        word-break: break-all;
+      }
+      .section {
+        background: #fff;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        padding: 24px 28px;
+        margin-bottom: 32px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      }
+      .part-label {
+        display: inline-block;
+        background: #333;
+        color: #fff;
+        font-size: 0.8rem;
+        font-weight: bold;
+        padding: 2px 8px;
+        border-radius: 3px;
+        margin-bottom: 10px;
+        letter-spacing: 0.05em;
+      }
+      code {
+        background: #f0f0f0;
+        padding: 1px 5px;
+        border-radius: 3px;
+        font-family: monospace;
+        font-size: 0.9em;
+      }
+      pre {
+        background: #f0f0f0;
+        padding: 12px;
+        border-radius: 4px;
+        font-family: monospace;
+        font-size: 0.88rem;
+        line-height: 1.5;
+      }
+      .note {
+        background: #fffbe6;
+        border-left: 4px solid #e0b800;
+        padding: 10px 14px;
+        border-radius: 4px;
+        font-size: 0.92rem;
+        margin-top: 16px;
+      }
+      hr {
+        border: none;
+        border-top: 1px solid #ddd;
+        margin: 30px 0;
+      }
+      img {
+        width: 300px;
+        /* height: 300px; */
+      }
+      .img-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin: 16px 0;
+      }
+      .img-row img {
+        flex: 1 1 45%;
+        max-width: 100%;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+      .img-block {
+        margin: 16px 0;
+      }
+      .img-block img {
+        max-width: 100%;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        display: block;
+      }
+      .img-caption {
+        font-size: 0.85rem;
+        color: #555;
+        margin-top: 5px;
+        font-style: italic;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>CS184/284A Spring 2025 Homework 2 Write-Up</h1>
 
-			.container {
-				margin: 0 auto;
-				padding: 60px 20%;
-			}
+    <div class="links-box">
+      <strong>Links:</strong>
+      <a href="https://cal-cs184-student.github.io/hw-webpages-jessieewoo"
+        >GitHub HTML Webpage</a
+      >
+      <a
+        href="https://cal-cs184-student.github.io/hw-webpages-jessieewoo/hw2/index.html"
+        >HTML Page</a
+      >
+      <a href="https://github.com/cal-cs184-student/hw2-meshedit-for_jessie"
+        >GitHub HW 2 Repository</a
+      >
+    </div>
 
-			figure {
-				text-align: center;
-			}
+    <!-- OVERVIEW -->
+    <div class="section">
+      <span class="part-label">OVERVIEW — 3 pts</span>
+      <p>
+        In this assignment, I implemented several core mesh editing operations
+        using the half-edge mesh data structure. The main operations included
+        edge flipping, edge splitting, and Loop subdivision for mesh upsampling.
+        These operations allowed me to modify the connectivity of a mesh and
+        refine it into a smoother, higher-resolution version.
+      </p>
+      <p>
+        For edge flipping, I updated the connectivity of two adjacent triangles
+        by changing which vertices the shared edge connects. This required
+        carefully reassigning all the halfedge pointers (next, twin, vertex,
+        edge, and face) so that the mesh remained valid. For edge splitting, I
+        inserted a new vertex at the midpoint of an edge and created new edges
+        and faces to properly subdivide the surrounding triangles.
+      </p>
+      <p>
+        After implementing these basic operations, I used them to implement Loop
+        subdivision. Loop subdivision repeatedly refines a mesh by splitting
+        edges, flipping certain edges, and updating vertex positions using
+        weighted averages of neighboring vertices. Applying this algorithm
+        several times produces a smoother surface that approximates the original
+        mesh.
+      </p>
+      <p>
+        One interesting thing I learned is how complex mesh connectivity
+        actually is. Even simple operations like flipping or splitting an edge
+        require updating many pointers, and missing even one connection can
+        break the mesh. Another interesting insight is how mesh connectivity
+        affects geometry — for example, the triangulation of a cube can cause
+        asymmetry after subdivision, even though the cube itself is symmetric.
+        This made it clear that both geometry and connectivity play important
+        roles in how subdivision algorithms behave.
+      </p>
+    </div>
 
-			img {
-				display: inline-block;
-			}
+    <!-- PART 1 -->
+    <div class="section">
+      <span class="part-label">PART 1 — 13 pts</span>
+      <h2>De Casteljau's Algorithm — Bezier Curves</h2>
 
-			body {
-				font-family: 'Inter', sans-serif;
-			}
-		</style>
-	</head>
-	<body>
-		<div class="container">
-		<h1>CS184/284A Spring 2025 Homework 2 Write-Up</h1>
-		<div style="text-align: center;">Names: </div>
+      <h3>Implementation</h3>
+      <p>
+        De Casteljau's algorithm finds a point on a Bezier curve by repeatedly
+        interpolating between neighboring control points. Starting with the
+        original control points, we compute new points between every pair using
+        the parameter <em>t</em>. Each new point lies somewhere between the two
+        original points depending on the value of <em>t</em>. After doing this
+        once, we get a new set of points. We repeat the same process on the new
+        points until only one point remains — that final point is the point on
+        the Bezier curve at the chosen value of <em>t</em>.
+      </p>
+      <p>
+        In my implementation, I completed
+        <code>BezierCurve::evaluateStep()</code> in
+        <code>student_code.cpp</code>. This function takes the current list of
+        control points and performs one step of interpolation. I loop through
+        each pair of adjacent points, compute the interpolated point using the
+        parameter <em>t</em>, and store the results in a new vector. The program
+        repeatedly calls this function until the final point on the curve is
+        produced.
+      </p>
 
-		<br>
+      <h3>Custom Bezier Curve (6 control points)</h3>
+      <p>
+        I created my own <code>curve3.bzc</code> file with 6 control points:
+      </p>
+      <pre>
+6
+0.1 0.2
+0.2 0.8
+0.4 0.3
+0.6 0.7
+0.8 0.4
+0.9 0.6</pre
+      >
+      <p>
+        These control points form the initial control polygon. The white squares
+        represent the control points, and the white lines show the control
+        polygon connecting them.
+      </p>
 
-		Link to webpage: (TODO) <a href="https://cs184.eecs.berkeley.edu/sp25">cs184.eecs.berkeley.edu/sp25</a>
+      <h3>Evaluation Steps (Level 0 → Level 6)</h3>
+      <ul>
+        <li>
+          <strong>Level 0:</strong> Original six control points forming the
+          control polygon.
+        </li>
+        <li>
+          <strong>Level 1:</strong> Five intermediate points computed by
+          interpolating between each adjacent pair of control points.
+        </li>
+        <li>
+          <strong>Level 2:</strong> Four new points produced by interpolating
+          between the Level 1 points.
+        </li>
+        <li>
+          <strong>Level 3:</strong> Three interpolated points from the previous
+          level.
+        </li>
+        <li><strong>Level 4:</strong> Two interpolated points.</li>
+        <li>
+          <strong>Level 5:</strong> A single final point (shown in red), which
+          lies on the Bezier curve at parameter <em>t</em>.
+        </li>
+        <li>
+          <strong>Level 6:</strong> The completed Bezier curve shown in green.
+        </li>
+      </ul>
 
-		<br>
-		
-		Link to GitHub repository: (TODO) <a href="https://cs184.eecs.berkeley.edu/sp25">cs184.eecs.berkeley.edu/sp25</a>
+      <div class="img-row">
+        <div class="img-block">
+          <img
+            src="photos/photo1.png"
+            alt="Level 0: Original control polygon"
+          />
+          <p class="img-caption">Level 0: Original control polygon</p>
+        </div>
+        <div class="img-block">
+          <img
+            src="photos/photo2.png"
+            alt="Level 1: Five intermediate points"
+          />
+          <p class="img-caption">Level 1: Five intermediate points</p>
+        </div>
+      </div>
+      <div class="img-row">
+        <div class="img-block">
+          <img
+            src="photos/photo3.png"
+            alt="Level 2: Four interpolated points"
+          />
+          <p class="img-caption">Level 2: Four interpolated points</p>
+        </div>
+        <div class="img-block">
+          <img
+            src="photos/photo4.png"
+            alt="Level 3: Three interpolated points"
+          />
+          <p class="img-caption">Level 3: Three interpolated points</p>
+        </div>
+      </div>
+      <div class="img-row">
+        <div class="img-block">
+          <img src="photos/photo5.png" alt="Level 4: Two interpolated points" />
+          <p class="img-caption">Level 4: Two interpolated points</p>
+        </div>
+        <div class="img-block">
+          <img
+            src="photos/photo6.png"
+            alt="Level 5: Single final point (red)"
+          />
+          <p class="img-caption">Level 5: Single final point (red)</p>
+        </div>
+      </div>
+      <div class="img-block">
+        <img
+          src="photos/photo7.png"
+          alt="Level 6: Completed Bezier curve (green)"
+        />
+        <p class="img-caption">Level 6: Completed Bezier curve (green)</p>
+      </div>
 
-		<figure>
-			<img src="teapot.png" alt="Teapot" style="width:50%"/>
-			<figcaption>You can add images with captions!</figcaption>
-		</figure>
+      <h3>Modified Curve</h3>
+      <p>
+        To generate a slightly different curve, I dragged some of the original
+        control points to new positions using the mouse, and also changed the
+        parameter <em>t</em> by scrolling. Changing <em>t</em> moves the
+        evaluated point along the curve. The screenshot shows how both moving
+        the control points and changing <em>t</em> affects the shape of the
+        curve and the position of the evaluated point.
+      </p>
+      <div class="img-block">
+        <img
+          src="photos/photo8.png"
+          alt="Modified Bezier curve with adjusted control points and parameter t"
+        />
+        <p class="img-caption">
+          Modified curve with adjusted control points and parameter t
+        </p>
+      </div>
+    </div>
 
-		<!--
-		We've already added one heading per part, to make your write-up as navigable when grading. Please fit your write-up within these sections!
-		-->
+    <!-- PART 2 -->
+    <div class="section">
+      <span class="part-label">PART 2 — 15 pts</span>
+      <h2>De Casteljau's Algorithm — Bezier Surfaces</h2>
 
-		<h2>Overview</h2>
-		Give a high-level overview of what you implemented in this homework. Think about what you've built as a whole. Share your thoughts on what interesting things you've learned from completing the homework.
+      <h3>Implementation</h3>
+      <p>
+        De Casteljau's algorithm for Bezier surfaces works by applying the same
+        interpolation idea used for Bezier curves, but in two directions.
+        Instead of a single list of control points, a Bezier surface has a grid
+        of control points. First, we treat each row of control points as a
+        Bezier curve and evaluate them using the parameter <em>u</em>, which
+        gives us one point per row. These resulting points form another Bezier
+        curve in the other direction. Then we apply the same de Casteljau
+        process again using the parameter <em>v</em> to evaluate that curve and
+        get the final point on the surface.
+      </p>
+      <p>
+        In my implementation, I reused the same idea from Part 1. I wrote
+        <code>evaluateStep()</code> to perform one interpolation step between
+        neighboring 3D control points. Then <code>evaluate1D()</code> repeatedly
+        calls that function until only one point remains. Finally, in
+        <code>evaluate()</code>, I first evaluate each row of the control point
+        grid using <em>u</em>, collect those points into a vector, and then
+        evaluate that vector using <em>v</em> to get the final point on the
+        Bezier surface.
+      </p>
 
-		<h2>Section I: Bezier Curves and Surfaces</h2>
+      <h3>Screenshot: bez/teapot.bez</h3>
+      <p>
+        The screenshot shows the Bezier surface generated from
+        <code>bez/teapot.bez</code>. The teapot is constructed from multiple
+        Bezier patches and is evaluated using the separable de Casteljau
+        algorithm. The rendered result appears as a smooth surface, confirming
+        that the Bezier surface evaluation is working correctly.
+      </p>
+      <div class="img-block">
+        <img
+          src="photos/photo9.png"
+          alt="Bezier surface teapot (bez/teapot.bez)"
+        />
+        <p class="img-caption">
+          bez/teapot.bez rendered using separable de Casteljau evaluation
+        </p>
+      </div>
+    </div>
 
-		<h3>Part 1: Bezier curves with 1D de Casteljau subdivision</h3>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+    <!-- PART 3 -->
+    <div class="section">
+      <span class="part-label">PART 3 — 12 pts</span>
+      <h2>Area-Weighted Vertex Normals</h2>
 
-		<p>Here is an example 2x2 gridlike structure using an HTML table. Each <b>tr</b> is a row and each <b>td</b> is a column in that row. You might find this useful for framing and showing your result images in an organized fashion.</p>
-		<div style="display: flex; flex-direction: column; align-items: center;">
-			<table style="width: 100%; text-align: center; border-collapse: collapse;">
-			  <tr>
-				<td style="text-align: center;">
-				  <img src="teapot.png" width="400px"/>
-				  <figcaption>Caption goes here.</figcaption>
-				</td>
-				<td style="text-align: center;">
-				  <img src="teapot.png" width="400px"/>
-				  <figcaption>Caption goes here.</figcaption>
-				</td>
-			  </tr>
-			  <tr>
-				<td style="text-align: center;">
-				  <img src="teapot.png" width="400px"/>
-				  <figcaption>Caption goes here.</figcaption>
-				</td>
-				<td style="text-align: center;">
-				  <img src="teapot.png" width="400px"/>
-				  <figcaption>Caption goes here.</figcaption>
-				</td>
-			  </tr>
-			</table>
-		</div>
+      <h3>Implementation</h3>
+      <p>
+        To compute the area-weighted normal at a vertex, I iterated through all
+        triangles neighboring that vertex using the half-edge structure.
+        Starting from one outgoing half-edge, I repeatedly moved around the
+        vertex using <code>h = h->twin()->next()</code> until I returned to the
+        starting half-edge. For each triangle, I got its three vertex positions
+        and formed two edge vectors from the current vertex to the other two
+        vertices. I then took the cross product of those two edge vectors to
+        compute the face normal. Since the magnitude of the cross product is
+        proportional to the area of the triangle, this automatically gives an
+        area-weighted contribution. I summed these normals over all neighboring
+        faces and then normalized the final result to get the unit vertex
+        normal.
+      </p>
 
-		<h3>Part 2: Bezier surfaces with separable 1D de Casteljau</h3>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+      <h3>Screenshots: dae/teapot.dae — Flat vs. Phong Shading</h3>
+      <p>
+        After implementing <code>Vertex::normal()</code>, I ran
+        <code>./meshedit ../dae/teapot.dae</code> and pressed Q to toggle the
+        area-weighted vertex normals. The teapot shading became smooth (Phong)
+        instead of flat, confirming that the vertex normals were computed
+        correctly.
+      </p>
+      <div class="img-row">
+        <div class="img-block">
+          <img src="photos/photo10.png" alt="Teapot with flat shading" />
+          <p class="img-caption">Flat shading (without vertex normals)</p>
+        </div>
+        <div class="img-block">
+          <img src="photos/photo11.png" alt="Teapot with Phong shading" />
+          <p class="img-caption">
+            Phong shading (with area-weighted vertex normals)
+          </p>
+        </div>
+      </div>
+    </div>
 
-		<h2>Section II: Triangle Meshes and Half-Edge Data Structure</h2>
+    <!-- PART 4 -->
+    <div class="section">
+      <span class="part-label">PART 4 — 12 pts</span>
+      <h2>Edge Flip</h2>
 
-		<h3>Part 3: Area-weighted vertex normals</h3>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+      <h3>Implementation</h3>
+      <p>
+        To implement edge flip, I first labeled the two triangles around the
+        selected edge and identified all of the related halfedges, vertices,
+        edges, and faces. Since an edge flip does not create or delete any mesh
+        elements, I kept the same set of halfedges, edges, vertices, and faces
+        and only reassigned their pointers. The main change was replacing the
+        shared edge between the two original triangles with the new diagonal
+        connecting the opposite two vertices.
+      </p>
+      <p>
+        I first checked whether the selected edge was on the boundary. If either
+        neighboring face was a boundary face, I immediately returned without
+        flipping. Otherwise, I collected all six halfedges involved in the two
+        triangles, along with their neighboring vertices, edges, and faces, then
+        carefully reassigned all pointer values so that the two triangles
+        matched the flipped configuration.
+      </p>
 
-		<h3>Part 4: Edge flip</h3>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+      <h3>Debugging</h3>
+      <p>
+        A useful debugging trick was to draw the local configuration on paper
+        and label every halfedge before and after the flip. Another thing that
+        helped was explicitly resetting all pointers for the affected local
+        elements — even if some of them did not change — because it reduced the
+        chance of missing one pointer and creating a broken mesh. At first, my
+        implementation created holes in the mesh due to incorrect halfedge
+        pointers. After fixing the pointer assignments and verifying the vertex
+        and face references were updated correctly, the mesh remained closed
+        even after flipping many edges.
+      </p>
 
-		<h3>Part 5: Edge split</h3>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+      <h3>Screenshots: Before &amp; After Edge Flips</h3>
+      <p>
+        After flipping some edges on the teapot, the connectivity of the
+        triangles changed even though the overall shape of the mesh stayed the
+        same. Edge flipping replaces the diagonal of two adjacent triangles with
+        the opposite diagonal. The geometry of the teapot itself does not
+        change, but the triangulation becomes rearranged, which can sometimes
+        improve the quality or regularity of the mesh.
+      </p>
+      <div class="img-row">
+        <div class="img-block">
+          <img src="photos/photo10.png" alt="Teapot before edge flips" />
+          <p class="img-caption">Teapot before edge flips</p>
+        </div>
+        <div class="img-block">
+          <img src="photos/photo13.png" alt="Teapot after edge flips" />
+          <p class="img-caption">Teapot after edge flips</p>
+        </div>
+      </div>
+    </div>
 
-		<h3>Part 6: Loop subdivision for mesh upsampling</h3>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+    <!-- PART 5 -->
+    <div class="section">
+      <span class="part-label">PART 5 — 20 pts</span>
+      <h2>Edge Split</h2>
 
-		<h2>(Optional) Section III: Potential Extra Credit - Art Competition: Model something Creative</h2>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+      <h3>Implementation</h3>
+      <p>
+        To implement edge split, I took the selected edge and looked at the two
+        triangles adjacent to it. I created a new vertex at the midpoint of the
+        original edge and rewired the local half-edge connectivity so that the
+        two old triangles became four smaller triangles. This required creating
+        new mesh elements (midpoint vertex, new edges, new faces, and new
+        halfedges) and then carefully updating all of their <code>next</code>,
+        <code>twin</code>, <code>vertex</code>, <code>edge</code>, and
+        <code>face</code> pointers. I also updated the representative halfedge
+        pointers for the affected vertices, faces, and edges.
+      </p>
+      <p>
+        One thing that helped a lot was drawing the local configuration before
+        and after the split and labeling all the halfedges, vertices, edges, and
+        faces. I also explicitly reset all local pointers even if some
+        technically did not change, and tested the implementation by repeatedly
+        splitting and flipping nearby edges to make sure the mesh stayed
+        connected and valid.
+      </p>
 
-		<h2>Additional Notes (please remove)</h2>
-		<ul>
-			<li>You can also add code if you'd like as so: <code>code code code</code></li>
-			<li>If you'd like to add math equations, 
-				<ul>
-					<li>You can write inline equations like so: \( a^2 + b^2 = c^2 \)</li>
-					<li>You can write display equations like so: \[ a^2 + b^2 = c^2 \]</li>
-				</ul>
-			</li>
-		</ul>
-		</div>
-	</body>
+      <h3>Screenshots: Before &amp; After Edge Splits</h3>
+      <p>
+        After performing edge splits on the mesh, new vertices were inserted at
+        the midpoints of the selected edges. This increased the number of
+        triangles and made the surface more finely subdivided. Each edge split
+        divides the two adjacent triangles into smaller triangles, increasing
+        mesh resolution while preserving the overall shape.
+      </p>
+      <div class="img-row">
+        <div class="img-block">
+          <img src="photos/photo10.png" alt="Mesh before edge splits" />
+          <p class="img-caption">Mesh before edge splits</p>
+        </div>
+        <div class="img-block">
+          <img src="photos/photo15.png" alt="Mesh after edge splits" />
+          <p class="img-caption">Mesh after edge splits</p>
+        </div>
+      </div>
+
+      <h3>Screenshots: Combined Edge Splits &amp; Flips</h3>
+      <p>
+        After applying a combination of edge splits and edge flips, both the
+        resolution and the connectivity of the mesh changed. Edge splits
+        increased the number of vertices and triangles, making the mesh denser.
+        Edge flips then rearranged the triangulation locally by changing which
+        vertices certain edges connect. This demonstrates how edge splits modify
+        mesh resolution while edge flips modify mesh connectivity.
+      </p>
+      <div class="img-row">
+        <div class="img-block">
+          <img
+            src="photos/photo10.png"
+            alt="Mesh before edge splits and flips"
+          />
+          <p class="img-caption">Mesh before edge splits and flips</p>
+        </div>
+        <div class="img-block">
+          <img
+            src="photos/photo17.png"
+            alt="Mesh after edge splits and flips"
+          />
+          <p class="img-caption">Mesh after edge splits and flips</p>
+        </div>
+      </div>
+
+      <h3>Debugging</h3>
+      <p>
+        The hardest part was that even if the code compiled, the mesh could
+        still break in subtle ways if just one pointer was wrong. Splitting an
+        edge would make parts of the mesh disappear or create broken local
+        connectivity. What helped most was slowing down and focusing only on the
+        small local neighborhood around the edge being split, drawing the two
+        original triangles and the four post-split triangles, and matching each
+        pointer assignment to the diagram. Testing by alternating between
+        splitting and flipping nearby edges made pointer mistakes show up
+        quickly.
+      </p>
+    </div>
+
+    <!-- PART 6 -->
+    <div class="section">
+      <span class="part-label">PART 6 — 25 pts</span>
+      <h2>Loop Subdivision</h2>
+
+      <h3>Implementation</h3>
+      <p>
+        I implemented loop subdivision in three main steps. First, I computed
+        the updated positions for all original vertices and stored them in
+        <code>Vertex::newPosition</code> without changing the actual vertex
+        positions yet. I also computed the midpoint positions for all original
+        edges using the Loop subdivision rule and stored them in
+        <code>Edge::newPosition</code>. Doing this first was important because
+        all weighting formulas are supposed to use the original mesh, not a
+        partially updated one.
+      </p>
+      <p>
+        Next, I split every original edge in the mesh. After each split, I
+        assigned the new midpoint vertex its precomputed edge position. Then I
+        iterated through the edges again and flipped any new edge that connected
+        one old vertex and one new vertex. Finally, after the connectivity was
+        updated, I copied all stored <code>newPosition</code> values into the
+        actual vertex positions.
+      </p>
+      <p>
+        The main debugging challenge was that Part 6 depends heavily on Parts 4
+        and 5 being correct. One key trick was making sure I only split the
+        original edges by first storing them in a separate list before modifying
+        the mesh, which avoided accidentally splitting newly created edges. I
+        also relied on <code>isNew</code> flags to carefully distinguish between
+        old and new vertices and edges.
+      </p>
+
+      <h3>Observations on Sharp Corners &amp; Edges</h3>
+      <p>
+        After each iteration of loop subdivision, the mesh becomes smoother and
+        more rounded. At the beginning, the cube has sharp corners, flat faces,
+        and hard edges. After one or two subdivision steps, those features start
+        to soften noticeably. The corners move inward, the edges round off, and
+        the overall shape starts looking more like a sphere than a cube.
+      </p>
+      <p>
+        Loop subdivision tends to smooth out sharp corners and edges because the
+        algorithm repeatedly replaces each vertex position with a weighted
+        average of its neighbors, pulling extreme features inward and spreading
+        the surface out more evenly.
+      </p>
+      <p>
+        This effect can be reduced by pre-splitting edges near a sharp feature.
+        Adding more supporting edges near a corner constrains how far the
+        smoothing pulls the surface, helping preserve that feature longer
+        through multiple subdivision steps.
+      </p>
+
+      <div class="img-row">
+        <div class="img-block">
+          <img src="photos/photo18.png" alt="Cube - subdivision level 0" />
+          <p class="img-caption">Cube: Level 0 (original)</p>
+        </div>
+        <div class="img-block">
+          <img src="photos/photo19.png" alt="Cube - subdivision level 1" />
+          <p class="img-caption">Cube: Level 1</p>
+        </div>
+      </div>
+      <div class="img-row">
+        <div class="img-block">
+          <img src="photos/photo20.png" alt="Cube - subdivision level 2" />
+          <p class="img-caption">Cube: Level 2</p>
+        </div>
+        <div class="img-block">
+          <img src="photos/photo21.png" alt="Cube - subdivision level 3" />
+          <p class="img-caption">Cube: Level 3</p>
+        </div>
+      </div>
+      <div class="img-row">
+        <div class="img-block">
+          <img src="photos/photo22.png" alt="Cube - subdivision level 4" />
+          <p class="img-caption">Cube: Level 4</p>
+        </div>
+        <div class="img-block">
+          <img src="photos/photo23.png" alt="Cube - subdivision level 5" />
+          <p class="img-caption">Cube: Level 5</p>
+        </div>
+      </div>
+
+      <h3>Teapot — Loop Subdivision</h3>
+      <div class="img-row">
+        <div class="img-block">
+          <img src="photos/photo24.png" alt="Teapot subdivision level 1" />
+          <p class="img-caption">Teapot: Level 1</p>
+        </div>
+        <div class="img-block">
+          <img src="photos/photo25.png" alt="Teapot subdivision level 2" />
+          <p class="img-caption">Teapot: Level 2</p>
+        </div>
+      </div>
+      <div class="img-row">
+        <div class="img-block">
+          <img src="photos/photo26.png" alt="Teapot subdivision level 3" />
+          <p class="img-caption">Teapot: Level 3</p>
+        </div>
+        <div class="img-block">
+          <img src="photos/photo27.png" alt="Teapot subdivision level 4" />
+          <p class="img-caption">Teapot: Level 4</p>
+        </div>
+      </div>
+
+      <h3>Cube Asymmetry &amp; Pre-Processing</h3>
+      <p>
+        When I applied repeated loop subdivision to the original cube, the cube
+        gradually became rounder but also developed a slight asymmetry. This
+        happens because the original cube mesh is triangulated in a way that is
+        not perfectly symmetric — the diagonal choices on the square faces
+        introduce directional bias into the triangle connectivity. Since loop
+        subdivision depends on local connectivity and weighted averaging, that
+        connectivity bias gets propagated and amplified over multiple
+        subdivision steps.
+      </p>
+      <p>
+        To reduce this effect, I pre-processed the cube using edge flips and
+        edge splits to make the triangulation more balanced and symmetric before
+        subdivision. The goal is to make the mesh connectivity match the
+        geometric symmetry of the cube more closely. If opposite faces and
+        neighboring regions are triangulated in a more consistent way, the
+        subdivision weights are applied more uniformly, resulting in a more
+        symmetric smoothed shape.
+      </p>
+      <p>
+        In other words, the asymmetry is not caused by the subdivision rule
+        alone, but by the fact that the rule is being applied to a connectivity
+        pattern that already has bias. Pre-processing improves that connectivity
+        before the smoothing begins.
+      </p>
+
+      <div class="img-row">
+        <div class="img-block">
+          <img src="photos/photo18.png" alt="Pre-processed cube - level 0" />
+          <p class="img-caption">Pre-processed cube: Level 0</p>
+        </div>
+        <div class="img-block">
+          <img src="photos/photo19.png" alt="Pre-processed cube - level 1" />
+          <p class="img-caption">Pre-processed cube: Level 1</p>
+        </div>
+      </div>
+      <div class="img-row">
+        <div class="img-block">
+          <img src="photos/photo20.png" alt="Pre-processed cube - level 2" />
+          <p class="img-caption">Pre-processed cube: Level 2</p>
+        </div>
+        <div class="img-block">
+          <img src="photos/photo21.png" alt="Pre-processed cube - level 3" />
+          <p class="img-caption">Pre-processed cube: Level 3</p>
+        </div>
+      </div>
+      <div class="img-row">
+        <div class="img-block">
+          <img src="photos/photo22.png" alt="Pre-processed cube - level 4" />
+          <p class="img-caption">Pre-processed cube: Level 4</p>
+        </div>
+        <div class="img-block">
+          <img src="photos/photo23.png" alt="Pre-processed cube - level 5" />
+          <p class="img-caption">Pre-processed cube: Level 5</p>
+        </div>
+      </div>
+    </div>
+
+    <hr />
+    <div class="note">
+      <strong>Acknowledgements:</strong> ChatGPT, OpenAI, chat.openai.com. Used
+      for sentence restructuring, wording refinement, and coding assistance in
+      terms of understanding C++ syntax, concepts, and debugging.
+    </div>
+  </body>
 </html>
